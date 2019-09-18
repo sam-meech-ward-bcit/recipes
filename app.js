@@ -26,6 +26,7 @@ function phpData(data) {
   
   return `<pre>$data = [
     "title" => "${data.title}",
+    "subTitle" => "Recipes 😎",
     "results" => [` +
     phpResults.reduce((previous, current) => previous+","+current) +
     `]];</pre>`;
