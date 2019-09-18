@@ -35,6 +35,10 @@ function phpData(data) {
 app.get("/:recipe", (req, res) => {
   request(`http://www.recipepuppy.com/api/?q=${req.params.recipe}`, function (error, response, body) {
     let data = JSON.parse(body);
+    if (data.results.length === 0) {
+      res.send("💩");
+      return;
+    }
     data = processData(data, req.params.recipe);
     data = phpData(data);
     console.log(data);
