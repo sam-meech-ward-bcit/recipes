@@ -1,55 +1,21 @@
 const express = require('express');
-const request = require('request');
+const network = require("./network");
 const fs = require('fs');
 
 const app = express();
 
-function processData(data, title) {
-  delete data.href;
-  delete data.version;
-  data.title = title;
-  return data;
-}
+app.set('view engine', 'ejs');
 
-function phpData(data) {
-
-  let phpResults = data.results.map(result => {
-    let string = '[\n';
-    for(const key in result) {
-      const value = result[key];
-      string += `"${key}" => "${value}",
-      `;
-    }
-    string += ']\n';
-    return string;
-  });
-  
-  return `<pre>$data = [
-    "title" => "${data.title}",
-    "subTitle" => "Recipes 😎",
-    "results" => [` +
-    phpResults.reduce((previous, current) => previous+","+current) +
-    `]];</pre>`;
-}
-
-app.get("/:recipe", (req, res) => {
-  request(`http://www.recipepuppy.com/api/?q=${req.params.recipe}`, function (error, response, body) {
-    let data = JSON.parse(body);
-    if (data.results.length === 0) {
-      res.send("💩");
-      return;
-    }
-    data = processData(data, req.params.recipe);
-    data = phpData(data);
-    console.log(data);
-    res.format({
-      'text/html': function () {
-        res.send(data);
-      }
-    });
-    
-  });
-  // res.send("😎");
+app.get("/html/:term", async (req, res) => {
+  const title = req.params.term;
+  let data = await network.get(title);
+  data = JSON.parse(data);
+  if (data.businesses.length === 0) {
+    res.send("💩");
+    return;
+  }
+  res.render('index', {results: data.businesses, title});
 });
+
 
 app.listen(process.env.PORT || 8080);
